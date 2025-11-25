@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="icon" href="data:,">
+    <meta charset="UTF-8" />
+    <title>成绩计算 Demo (.NET 8)</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div class="main-layout">
+        <div class="container">
+            <h1>成绩计算 Demo (SignalR / .NET 8)</h1>
+        <div class="method-select">
+            <label><input type="radio" name="method" value="1" checked> 方式一（逐科，遇不及格弹窗）</label>
+            <label><input type="radio" name="method" value="2"> 方式二（整批，标红不及格）</label>
+        </div>
+        <div class="button-group">
+            <button id="btnCalc">计算总分</button>
+            <button id="btnBroadcast" class="btn-broadcast">发送广播</button>
+        </div>
+        <div id="status" class="status"></div>
+        
+        <!-- 聊天框 -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <span>💬 系统消息</span>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" placeholder="输入广播消息..." maxlength="200" />
+                <button id="btnSendChat">发送</button>
+            </div>
+        </div>
+        
+        <h2>结果</h2>
+        <table id="scoreTable">
+            <thead>
+                <tr><th>科目</th><th>分数</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>数学</td><td data-subject="数学">--</td></tr>
+                <tr><td>语文</td><td data-subject="语文">--</td></tr>
+                <tr><td>英语</td><td data-subject="英语">--</td></tr>
+                <tr><td>物理</td><td data-subject="物理">--</td></tr>
+            </tbody>
+            <tfoot>
+                <tr><td>总分</td><td id="totalCell">--</td></tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="signalr-monitor">
+        <div class="monitor-header">
+            <h3>SignalR 交互监控</h3>
+            <div class="header-controls">
+                <div class="connection-status">
+                    <button id="btnConnectionStatus" class="status-indicator disconnected">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Disconnected</span>
+                    </button>
+                </div>
+                <button id="btnConnect" class="control-btn connect-btn">连接</button>
+                <button id="btnDisconnect" class="control-btn disconnect-btn" disabled>断开</button>
+                <button id="btnClearLog" class="clear-btn">清空</button>
+            </div>
+        </div>
+        <div class="monitor-content" id="signalrLog"></div>
+    </div>
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content" id="modalContent">
+            <div class="modal-header">提示</div>
+            <div class="modal-body">
+                <p id="modalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-actions">
+                    <button id="btnReason" class="secondary">查看原因</button>
+                    <button id="btnContinue">继续</button>
+                    <button id="btnAbort" class="danger">中止</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content" id="reasonModalContent">
+            <div class="modal-header">不及格原因</div>
+            <div class="modal-body">
+                <div id="reasonBox" class="reason-box"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-actions">
+                    <button id="btnCloseReason">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/signalr/signalr.min.js"></script>
+    <script src="app.js?v=8"></script>
+</body>
+</html>
