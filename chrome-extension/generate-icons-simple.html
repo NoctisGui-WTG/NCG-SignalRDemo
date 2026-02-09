@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>自动生成并保存图标</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .preview {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .instructions {
+            text-align: left;
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 SignalR Monitor - 图标自动生成</h1>
+
+        <div class="status info" id="status">
+            正在生成图标...
+        </div>
+
+        <div class="preview" id="preview"></div>
+
+        <div class="instructions">
+            <h3>📋 接下来的步骤：</h3>
+            <ol>
+                <li>图标已自动下载到你的"下载"文件夹</li>
+                <li>找到下载的3个文件：
+                    <ul>
+                        <li>icon16.png</li>
+                        <li>icon48.png</li>
+                        <li>icon128.png</li>
+                    </ul>
+                </li>
+                <li>将这3个文件移动到：<br>
+                    <code>D:\GitProjects\NCG-SignalRDemo\chrome-extension\icons\</code>
+                </li>
+                <li>然后重新加载Chrome扩展</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function createIcon(size, filename) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // 背景渐变
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // 绘制信号波纹图标
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = size / 16;
+            ctx.lineCap = 'round';
+
+            const centerX = size / 2;
+            const centerY = size / 2;
+
+            // 中心点
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, size / 20, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+
+            // 三层波纹
+            for (let i = 1; i <= 3; i++) {
+                const radius = (size / 6) * i;
+                const startAngle = -Math.PI / 3;
+                const endAngle = Math.PI / 3;
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.stroke();
+            }
+
+            return canvas;
+        }
+
+        function downloadCanvas(canvas, filename) {
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    setTimeout(resolve, 300);
+                });
+            });
+        }
+
+        async function generateAll() {
+            const sizes = [
+                { size: 16, name: 'icon16.png' },
+                { size: 48, name: 'icon48.png' },
+                { size: 128, name: 'icon128.png' }
+            ];
+
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+
+            for (const { size, name } of sizes) {
+                const canvas = createIcon(size, name);
+
+                const wrapper = document.createElement('div');
+                const label = document.createElement('p');
+                label.textContent = name;
+                label.style.fontWeight = 'bold';
+                label.style.marginBottom = '5px';
+
+                wrapper.appendChild(label);
+                wrapper.appendChild(canvas);
+                preview.appendChild(wrapper);
+
+                await downloadCanvas(canvas, name);
+            }
+
+            document.getElementById('status').className = 'status success';
+            document.getElementById('status').innerHTML =
+                '✅ 成功！3个图标已下载<br>请查看你的"下载"文件夹';
+        }
+
+        // 页面加载后自动生成并下载
+        window.onload = () => {
+            setTimeout(generateAll, 500);
+        };
+    </script>
+</body>
+</html>

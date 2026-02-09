@@ -1,0 +1,26 @@
+{
+  "name": "signalr-monitor",
+  "version": "1.0.0",
+  "description": "Chrome扩展：监测SignalR连接状态和数据流向",
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": [
+    "signalr",
+    "chrome-extension",
+    "monitor",
+    "devtools",
+    "websocket",
+    "real-time"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/signalr-monitor"
+  },
+  "scripts": {
+    "build": "echo 'No build step required for this extension'",
+    "package": "echo 'Ready to load as unpacked extension'",
+    "help": "echo 'See README.md and QUICKSTART.md for instructions'"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

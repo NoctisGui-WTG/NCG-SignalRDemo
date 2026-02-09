@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalR Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 340px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .status {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .status-value {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .status-connected {
+            color: #4caf50;
+        }
+
+        .status-disconnected {
+            color: #f44336;
+        }
+
+        .status-connecting {
+            color: #ff9800;
+        }
+
+        .status-reconnecting {
+            color: #ff9800;
+        }
+
+        .info-box {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .info-box p {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SignalR Monitor</h1>
+            <p>Auto-detect and monitor SignalR communication</p>
+        </div>
+
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">Connection</span>
+                <span class="status-value status-disconnected" id="connectionStatus">Not detected</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Messages captured</span>
+                <span class="status-value" id="messageCount">0</span>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <p>No configuration needed. The extension automatically intercepts all SignalR (WebSocket) communication on the page.</p>
+            <p style="margin-top: 6px;">Press <strong>F12</strong> to open DevTools, then switch to the <strong>"SignalR"</strong> tab for details.</p>
+        </div>
+
+        <button class="btn" id="openDevTools">Open DevTools for details</button>
+
+        <div class="footer">
+            <p>v1.1.0 | Supports all SignalR JSON protocol projects</p>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

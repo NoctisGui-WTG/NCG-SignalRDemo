@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图标生成器 - SignalR Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .preview {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .icon-box {
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: block;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 SignalR Monitor 图标生成器</h1>
+
+        <div class="instructions">
+            <h3>使用说明：</h3>
+            <ol>
+                <li>点击下方的"生成图标"按钮</li>
+                <li>右键点击每个图标，选择"图片另存为..."</li>
+                <li>按照显示的文件名保存到 <code>icons/</code> 文件夹</li>
+                <li>或者点击"全部下载"一次性下载所有图标</li>
+            </ol>
+        </div>
+
+        <div class="button-group">
+            <button onclick="generateIcons()">🎨 生成图标</button>
+            <button onclick="downloadAll()">💾 全部下载</button>
+        </div>
+
+        <div class="preview" id="preview"></div>
+
+        <div class="success" id="success">
+            ✅ 图标已生成！请右键保存或点击"全部下载"。
+        </div>
+    </div>
+
+    <script>
+        let canvases = {};
+
+        function generateIcons() {
+            const sizes = [
+                { size: 16, name: 'icon16.png' },
+                { size: 48, name: 'icon48.png' },
+                { size: 128, name: 'icon128.png' }
+            ];
+
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+
+            sizes.forEach(({ size, name }) => {
+                const box = document.createElement('div');
+                box.className = 'icon-box';
+
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+
+                const ctx = canvas.getContext('2d');
+
+                // 背景渐变
+                const gradient = ctx.createLinearGradient(0, 0, size, size);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, size, size);
+
+                // 绘制信号波纹图标
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = size / 16;
+                ctx.lineCap = 'round';
+
+                const centerX = size / 2;
+                const centerY = size / 2;
+
+                // 中心点
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, size / 20, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+
+                // 三层波纹
+                for (let i = 1; i <= 3; i++) {
+                    const radius = (size / 6) * i;
+                    const startAngle = -Math.PI / 3;
+                    const endAngle = Math.PI / 3;
+
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                    ctx.stroke();
+                }
+
+                canvases[name] = canvas;
+
+                const label = document.createElement('p');
+                label.textContent = name;
+                label.style.fontWeight = 'bold';
+
+                box.appendChild(label);
+                box.appendChild(canvas);
+
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = '下载';
+                downloadBtn.onclick = () => downloadCanvas(canvas, name);
+                box.appendChild(downloadBtn);
+
+                preview.appendChild(box);
+            });
+
+            document.getElementById('success').style.display = 'block';
+        }
+
+        function downloadCanvas(canvas, filename) {
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        function downloadAll() {
+            if (Object.keys(canvases).length === 0) {
+                alert('请先点击"生成图标"按钮！');
+                return;
+            }
+
+            Object.entries(canvases).forEach(([name, canvas], index) => {
+                setTimeout(() => {
+                    downloadCanvas(canvas, name);
+                }, index * 300);
+            });
+        }
+
+        // 页面加载时自动生成
+        window.onload = generateIcons;
+    </script>
+</body>
+</html>

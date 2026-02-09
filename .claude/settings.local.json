@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet:*)",
+      "Bash(timeout:*)",
+      "Bash(start icon-generator.html)",
+      "Bash(start \"\" \"D:\\\\GitProjects\\\\NCG-SignalRDemo\\\\chrome-extension\\\\generate-icons-simple.html\")",
+      "Bash(powershell -Command \"Move-Item -Path \"\"$env:USERPROFILE\\\\Downloads\\\\icon*.png\"\" -Destination ''D:\\\\GitProjects\\\\NCG-SignalRDemo\\\\chrome-extension\\\\icons\\\\'' -Force\")",
+      "Bash(cmd /c \"D:\\\\GitProjects\\\\NCG-SignalRDemo\\\\chrome-extension\\\\move-icons.bat\")",
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Chrome DevTools extension for SignalR monitoring\n\nImplements a Chrome extension that intercepts SignalR communication\nat the WebSocket protocol level. Uses Manifest V3 MAIN world injection\nto hook WebSocket before any page scripts run, eliminating timing issues.\nAutomatically detects SignalR connections via handshake signature.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扩展测试</title>
+    <style>
+        body {
+            font-family: 'Consolas', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+            background: #252526;
+        }
+        .success { border-left-color: #4caf50; }
+        .error { border-left-color: #f44336; }
+        .warning { border-left-color: #ff9800; }
+        h1 { color: #667eea; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1177bb; }
+        .log {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>📡 SignalR Monitor 扩展测试</h1>
+
+    <div id="results"></div>
+
+    <h2>测试操作</h2>
+    <button onclick="testExtensionInjection()">1. 测试扩展注入</button>
+    <button onclick="testSignalRAvailable()">2. 测试SignalR可用性</button>
+    <button onclick="testContentScript()">3. 测试Content Script</button>
+    <button onclick="clearLog()">清空日志</button>
+
+    <h2>控制台日志</h2>
+    <div class="log" id="log"></div>
+
+    <script>
+        const results = document.getElementById('results');
+        const logEl = document.getElementById('log');
+
+        function addResult(title, message, type = 'success') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${title}</strong><br>${message}`;
+            results.appendChild(div);
+        }
+
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.style.color = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#d4d4d4';
+            entry.textContent = `[${time}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            logEl.innerHTML = '';
+            results.innerHTML = '';
+        }
+
+        // 监听来自扩展的消息
+        window.addEventListener('message', (event) => {
+            if (event.data.source === 'signalr-monitor') {
+                log(`📥 收到扩展消息: ${event.data.type}`, 'success');
+                console.log('Extension message:', event.data);
+            }
+        });
+
+        function testExtensionInjection() {
+            log('测试扩展脚本注入...');
+
+            // 检查是否有来自扩展的消息监听器
+            let hasListener = false;
+
+            // 发送测试消息
+            window.postMessage({
+                source: 'signalr-monitor-test',
+                type: 'PING'
+            }, '*');
+
+            setTimeout(() => {
+                if (window.signalR) {
+                    addResult(
+                        '✅ SignalR已加载',
+                        'window.signalR 对象存在，扩展可以Hook SignalR',
+                        'success'
+                    );
+                    log('✓ SignalR已加载', 'success');
+                } else {
+                    addResult(
+                        '❌ SignalR未加载',
+                        '页面上没有SignalR库，扩展无法工作',
+                        'error'
+                    );
+                    log('✗ SignalR未加载', 'error');
+                }
+            }, 1000);
+        }
+
+        function testSignalRAvailable() {
+            log('测试SignalR连接...');
+
+            if (!window.signalR) {
+                addResult('❌ SignalR不可用', '请先加载SignalR库', 'error');
+                log('✗ SignalR不可用', 'error');
+                return;
+            }
+
+            addResult(
+                '✅ SignalR可用',
+                `版本: ${window.signalR.VERSION || '未知'}`,
+                'success'
+            );
+            log(`✓ SignalR版本: ${window.signalR.VERSION || '未知'}`, 'success');
+
+            // 检查HubConnectionBuilder是否被Hook
+            const builder = new window.signalR.HubConnectionBuilder();
+            log('✓ HubConnectionBuilder创建成功', 'success');
+        }
+
+        function testContentScript() {
+            log('测试Content Script通信...');
+
+            // 尝试发送消息到content script
+            window.postMessage({
+                source: 'test-page',
+                type: 'TEST_MESSAGE',
+                data: { test: true }
+            }, '*');
+
+            addResult(
+                'ℹ️ 消息已发送',
+                '已发送测试消息到Content Script，请检查控制台',
+                'warning'
+            );
+            log('✓ 测试消息已发送', 'success');
+        }
+
+        // 页面加载完成后自动运行测试
+        window.onload = () => {
+            log('页面加载完成，开始测试...', 'info');
+            setTimeout(testExtensionInjection, 500);
+        };
+    </script>
+</body>
+</html>
