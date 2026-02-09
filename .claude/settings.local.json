@@ -9,7 +9,10 @@
       "Bash(cmd /c \"D:\\\\GitProjects\\\\NCG-SignalRDemo\\\\chrome-extension\\\\move-icons.bat\")",
       "Bash(dir:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Chrome DevTools extension for SignalR monitoring\n\nImplements a Chrome extension that intercepts SignalR communication\nat the WebSocket protocol level. Uses Manifest V3 MAIN world injection\nto hook WebSocket before any page scripts run, eliminating timing issues.\nAutomatically detects SignalR connections via handshake signature.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Chrome DevTools extension for SignalR monitoring\n\nImplements a Chrome extension that intercepts SignalR communication\nat the WebSocket protocol level. Uses Manifest V3 MAIN world injection\nto hook WebSocket before any page scripts run, eliminating timing issues.\nAutomatically detects SignalR connections via handshake signature.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

@@ -3,6 +3,7 @@
 
 let messages = [];
 let isPaused = false;
+let clearTimestamp = 0;
 let filters = {
     send: true,
     receive: true,
@@ -18,29 +19,45 @@ const clearBtn = document.getElementById('clearBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const exportBtn = document.getElementById('exportBtn');
 
-// Connect to background service worker
-const port = chrome.runtime.connect({ name: 'devtools' });
+// ── Port connection with auto-reconnect ──────────────────
+
+let port = null;
 const tabId = chrome.devtools.inspectedWindow.tabId;
 
-// Request historical messages
-port.postMessage({ type: 'INIT', tabId: tabId });
+function connectPort() {
+    port = chrome.runtime.connect({ name: 'devtools' });
 
-// Receive all messages via port (history + live)
-port.onMessage.addListener((message) => {
-    if (message.type === 'HISTORY') {
-        messages = message.messages || [];
-        renderMessages();
-    } else if (message.type === 'CLEARED') {
-        messages = [];
-        renderMessages();
-    } else if (message.type === 'NEW_MESSAGE') {
-        if (!isPaused) {
-            addMessage(message.data);
+    port.onMessage.addListener((message) => {
+        if (message.type === 'HISTORY') {
+            // Filter out messages older than last clear
+            messages = (message.messages || []).filter(m => (m._timestamp || 0) > clearTimestamp);
+            renderMessages();
+        } else if (message.type === 'CLEARED') {
+            messages = [];
+            renderMessages();
+        } else if (message.type === 'NEW_MESSAGE') {
+            if (!isPaused && message.data) {
+                // Ignore messages sent before the last clear
+                if ((message.data._timestamp || 0) > clearTimestamp) {
+                    addMessage(message.data);
+                }
+            }
         }
-    }
-});
+    });
 
-// Add a new message
+    port.onDisconnect.addListener(() => {
+        // Service worker may have restarted, reconnect after a short delay
+        setTimeout(connectPort, 500);
+    });
+
+    // Request historical messages
+    port.postMessage({ type: 'INIT', tabId: tabId });
+}
+
+connectPort();
+
+// ── Message handling ─────────────────────────────────────
+
 function addMessage(entry) {
     messages.push(entry);
 
@@ -52,7 +69,6 @@ function addMessage(entry) {
     renderMessages();
 }
 
-// Update connection status indicator
 function updateStatus(entry) {
     if (entry.type === 'SIGNALR_STATE' && entry.data) {
         const state = entry.data.state;
@@ -68,7 +84,6 @@ function updateStatus(entry) {
     }
 }
 
-// Get display type for a message
 function getMsgDisplayType(entry) {
     switch (entry.type) {
         case 'SIGNALR_SEND': return 'send';
@@ -80,7 +95,6 @@ function getMsgDisplayType(entry) {
     }
 }
 
-// Get display method name for a message
 function getMsgMethod(entry) {
     const data = entry.data || {};
     switch (entry.type) {
@@ -98,12 +112,12 @@ function getMsgMethod(entry) {
     }
 }
 
-// Get detail data for a message
 function getMsgDetail(entry) {
     return entry.data || {};
 }
 
-// Render message list
+// ── Rendering ────────────────────────────────────────────
+
 function renderMessages() {
     const filtered = messages.filter(msg => {
         const displayType = getMsgDisplayType(msg);
@@ -122,7 +136,6 @@ function renderMessages() {
 
     messagesContainer.innerHTML = filtered.map(msg => createMessageElement(msg)).join('');
 
-    // Bind click-to-expand events
     document.querySelectorAll('.message-header').forEach(header => {
         header.addEventListener('click', () => {
             const body = header.nextElementSibling;
@@ -130,11 +143,9 @@ function renderMessages() {
         });
     });
 
-    // Auto-scroll to bottom
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Create HTML for a single message
 function createMessageElement(msg) {
     const ts = msg.data?.timestamp || msg._timestamp;
     const time = ts
@@ -179,8 +190,14 @@ function escapeHtml(str) {
 
 clearBtn.addEventListener('click', () => {
     messages = [];
-    port.postMessage({ type: 'CLEAR', tabId: tabId });
+    clearTimestamp = Date.now();
     renderMessages();
+
+    try {
+        port.postMessage({ type: 'CLEAR', tabId: tabId });
+    } catch (e) {
+        // Port may be disconnected, will reconnect automatically
+    }
 });
 
 pauseBtn.addEventListener('click', () => {
@@ -199,7 +216,6 @@ exportBtn.addEventListener('click', () => {
     URL.revokeObjectURL(url);
 });
 
-// Filters
 document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', (e) => {
         const type = e.target.dataset.type;
@@ -208,5 +224,4 @@ document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
     });
 });
 
-// Initial render
 renderMessages();
